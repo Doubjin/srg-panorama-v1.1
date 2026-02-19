@@ -5,15 +5,15 @@ class AudioApp {
     constructor() {
         this.ctx = null;
         this.audioBuffer = null;
-        this.sourceNode = null;
-        this.workletNode = null;
+        this.audio = new Audio(); // HTML5 Audio Element
+        this.audio.loop = false;
+        this.mediaSource = null;
         this.workletNode = null;
 
         // Playback State
         this.isPlaying = false;
-        this.startTime = 0;
-        this.pauseTime = 0;
-        this.isLooping = false;
+        // startTime and pauseTime are less relevant with AudioElement, 
+        // relying on this.audio.currentTime
 
         // UI Elements
         this.dropZone = document.getElementById('drop-zone');
@@ -26,10 +26,8 @@ class AudioApp {
 
         this.timeCurrent = document.getElementById('time-current');
         this.timeTotal = document.getElementById('time-total');
-        // this.seekBar = document.getElementById('seek-bar'); // Removed
 
         this.waveformCanvas = document.getElementById('waveform-canvas');
-
 
         this.led = document.getElementById('signal-led');
 
@@ -72,10 +70,19 @@ class AudioApp {
         // Transport
         this.btnPlay.addEventListener('click', () => this.togglePlay());
         this.btnStop.addEventListener('click', () => this.stop());
+        // Reset Button (formerly Loop)
         this.btnLoop.addEventListener('click', () => {
-            this.isLooping = !this.isLooping;
-            this.btnLoop.classList.toggle('active');
-            if (this.sourceNode) this.sourceNode.loop = this.isLooping;
+            this.stop(true);
+            this.visualizer.reset();
+
+            // Reset UI Values manually to -oo
+            this.updateUI({
+                momentary: -100,
+                shortTerm: -100,
+                integrated: -100,
+                lra: 0,
+                truePeak: -100
+            });
         });
 
         // Waveform Seeking
@@ -89,8 +96,6 @@ class AudioApp {
             const self = this;
             function onMove(moveEvent) {
                 const t = self.waveform.getClickedTime(moveEvent.clientX);
-                // maybe debounced seek? or just update UI cursor?
-                // For now let's just seek on click/drag
                 self.seek(t);
             }
             function onUp() {
@@ -101,13 +106,18 @@ class AudioApp {
             window.addEventListener('mouseup', onUp);
         });
 
-
-
         // Keyboard shortcuts
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
                 this.togglePlay();
+            }
+        });
+
+        // Audio Element Listeners
+        this.audio.addEventListener('ended', () => {
+            if (!this.audio.loop) {
+                this.stop(false);
             }
         });
     }
@@ -124,6 +134,11 @@ class AudioApp {
                 this.updateUI(event.data);
                 this.visualizer.update(event.data);
             };
+
+            // Connect AudioElement to Web Audio API
+            this.mediaSource = this.ctx.createMediaElementSource(this.audio);
+            this.mediaSource.connect(this.ctx.destination); // For listening
+            this.mediaSource.connect(this.workletNode);     // For analysis
         }
         if (this.ctx.state === 'suspended') {
             await this.ctx.resume();
@@ -131,11 +146,8 @@ class AudioApp {
     }
 
     async handleFile(file) {
-        // Relaxed type check: Allow audio/* OR if type is empty (unknown)
-        // verify extension as fallback
         const validExtensions = ['.mp3', '.wav', '.flac', '.ogg', '.m4a', '.aac', '.wma', '.aiff'];
         const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-
         const isAudioType = file.type.startsWith('audio/');
         const isValidExt = validExtensions.includes(ext);
 
@@ -149,6 +161,11 @@ class AudioApp {
         try {
             await this.initAudioContext();
 
+            // 1. Create Blob URL for Streaming Playback (Mobile compatible)
+            const url = URL.createObjectURL(file);
+            this.audio.src = url;
+
+            // 2. Decode for Visual Waveform (still needed)
             const arrayBuffer = await file.arrayBuffer();
             this.audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
 
@@ -160,7 +177,7 @@ class AudioApp {
             // Draw Waveform
             this.waveform.loadAudio(this.audioBuffer);
 
-            // Start playback immediately
+            // Start playback
             this.play();
         } catch (err) {
             console.error(err);
@@ -169,47 +186,31 @@ class AudioApp {
         }
     }
 
-    play(offset = 0) {
-        if (!this.audioBuffer) return;
+    async play() {
+        if (!this.audio.src) return;
 
-        if (this.sourceNode) this.sourceNode.stop();
+        await this.initAudioContext(); // Ensure context is ready/resumed
 
-        this.sourceNode = this.ctx.createBufferSource();
-        this.sourceNode.buffer = this.audioBuffer;
-        this.sourceNode.loop = this.isLooping;
-
-        this.sourceNode.connect(this.ctx.destination);
-        this.sourceNode.connect(this.workletNode);
-
-        this.sourceNode.start(0, offset);
-
-        this.startTime = this.ctx.currentTime - offset;
-        this.pauseTime = offset;
-        this.isPlaying = true;
-        this.btnPlay.textContent = 'II';
-
-        this.visualizer.start();
-        this.animateFrame = requestAnimationFrame(() => this.updateTime());
-
-        this.sourceNode.onended = () => {
-            if (this.isPlaying && !this.isLooping && (this.ctx.currentTime - this.startTime >= this.audioBuffer.duration)) {
-                this.stop(false);
-            }
-        };
+        try {
+            await this.audio.play();
+            this.isPlaying = true;
+            this.btnPlay.textContent = 'II';
+            this.visualizer.start();
+            this.animateFrame = requestAnimationFrame(() => this.updateTime());
+        } catch (e) {
+            console.error("Playback failed:", e);
+        }
     }
 
     stop(reset = true) {
-        if (this.sourceNode) {
-            try { this.sourceNode.stop(); } catch (e) { }
-            this.sourceNode = null;
-        }
+        this.audio.pause();
         this.isPlaying = false;
         this.btnPlay.textContent = '▶';
         cancelAnimationFrame(this.animateFrame);
         this.led.classList.remove('active');
 
         if (reset) {
-            this.pauseTime = 0;
+            this.audio.currentTime = 0;
             this.timeCurrent.textContent = "00:00";
             if (this.workletNode) this.workletNode.port.postMessage({ type: 'reset' });
             this.visualizer.stop();
@@ -222,42 +223,34 @@ class AudioApp {
             await this.ctx.resume();
         }
 
-        if (this.isPlaying) {
-            this.stop(false);
-            this.pauseTime = this.ctx.currentTime - this.startTime;
+        if (this.audio.paused) {
+            this.play();
         } else {
-            if (this.pauseTime >= this.audioBuffer.duration) this.pauseTime = 0;
-            this.play(this.pauseTime);
+            this.audio.pause();
+            this.isPlaying = false;
+            this.btnPlay.textContent = '▶';
         }
     }
 
     seek(time) {
-        const wasPlaying = this.isPlaying;
-        if (this.isPlaying) this.stop(false);
-        this.pauseTime = time;
+        if (!this.audioBuffer) return;
+
         // Clamp
-        if (this.pauseTime < 0) this.pauseTime = 0;
-        if (this.audioBuffer && this.pauseTime > this.audioBuffer.duration) this.pauseTime = this.audioBuffer.duration;
+        if (time < 0) time = 0;
+        if (time > this.audio.duration) time = this.audio.duration;
 
-        this.timeCurrent.textContent = this.formatTime(this.pauseTime);
-        this.waveform.drawState(this.pauseTime); // Instant visual update
+        this.audio.currentTime = time;
+        this.timeCurrent.textContent = this.formatTime(time);
+        this.waveform.drawState(time); // Instant visual update
 
-        if (wasPlaying) {
-            this.play(this.pauseTime);
-        }
+        // If it was playing, it stays playing (AudioElement behavior)
+        // If it was paused, it stays paused
     }
 
     updateTime() {
-        if (!this.isPlaying || !this.audioBuffer) return;
+        if (this.audio.paused) return; // Stop loop if paused
 
-        const now = this.ctx.currentTime;
-        let pTime = now - this.startTime;
-
-        if (this.isLooping && pTime > this.audioBuffer.duration) {
-            pTime = pTime % this.audioBuffer.duration;
-        } else if (pTime > this.audioBuffer.duration) {
-            pTime = this.audioBuffer.duration;
-        }
+        const pTime = this.audio.currentTime;
 
         this.timeCurrent.textContent = this.formatTime(pTime);
 
