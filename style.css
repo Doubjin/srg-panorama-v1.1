@@ -470,7 +470,10 @@ h3 {
         /* Overlay Layout for Full Width */
         display: block;
         position: relative;
-        width: 100%;
+        width: 94%;
+        /* Leave space for touch */
+        margin: 0 auto;
+        /* Center it */
         height: 60px;
         /* Explicit height */
     }
