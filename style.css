@@ -436,22 +436,6 @@ h3 {
         margin: 0;
     }
 
-    .target-selector label {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        cursor: pointer;
-    }
-
-    .version-label {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        text-align: right;
-        margin-top: 10px;
-        opacity: 0.7;
-    }
-
     .drop-text {
         padding: 5px;
         font-size: 0.7rem;
