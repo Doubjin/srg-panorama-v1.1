@@ -220,7 +220,7 @@ export class PhysicsVisualizer {
         // --- Grid & Labels ---
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = 'bold 12px Inter, sans-serif';
+        ctx.font = '10px Inter';
         ctx.fillStyle = '#000';
 
         const levels = [-48, -36, -24, -14, -6];
