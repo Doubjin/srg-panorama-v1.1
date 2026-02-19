@@ -407,9 +407,9 @@ h3 {
         gap: 5px;
         /* Grid Layout */
         display: grid;
-        grid-template-columns: 45% 55%;
-        /* Adjusted Ratio */
-        /* DropZone (45%), Buttons (55%) */
+        grid-template-columns: 42% 58%;
+        /* More space for buttons */
+        /* DropZone (42%), Buttons (58%) */
         grid-template-rows: auto auto;
         /* Row 1: Controls, Row 2: Waveform */
         align-items: center;
@@ -450,13 +450,12 @@ h3 {
         grid-row: 1 / 2;
         margin-bottom: 0;
         display: flex;
-        gap: 5px;
-        justify-content: space-between;
-        /* Spread buttons evenly */
+        gap: 15px;
+        /* Nice balanced gap */
+        justify-content: center;
+        /* Center aligned as requested */
         width: 100%;
-        /* Take full available width */
-        padding-left: 5px;
-        /* Slight gap from drop zone */
+        padding-left: 0;
     }
 
     .icon-btn {
