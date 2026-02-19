@@ -190,7 +190,7 @@ class AudioApp {
             // Ready UI
             this.dropZone.querySelector('.drop-text').textContent = file.name;
             this.playerControls.classList.remove('disabled');
-            this.timeTotal.textContent = this.formatTime(this.audioBuffer.duration);
+            this.timeTotal.textContent = `-${this.formatTime(this.audioBuffer.duration)}`;
 
             // Draw Waveform
             this.waveform.loadAudio(this.audioBuffer);
@@ -230,6 +230,13 @@ class AudioApp {
         if (reset) {
             this.audio.currentTime = 0;
             this.timeCurrent.textContent = "00:00";
+            this.timeTotal.textContent = "-00:00"; // Reset total? Or keep duration? 
+            // Better to keep duration if loaded, but if really resetting everything...
+            // If audioBuffer exists, show duration.
+            if (this.audioBuffer) {
+                this.timeTotal.textContent = `-${this.formatTime(this.audioBuffer.duration)}`;
+            }
+
             if (this.workletNode) this.workletNode.port.postMessage({ type: 'reset' });
             this.visualizer.stop();
             if (this.waveform) this.waveform.drawState(0);
@@ -259,6 +266,11 @@ class AudioApp {
 
         this.audio.currentTime = time;
         this.timeCurrent.textContent = this.formatTime(time);
+
+        // Update remaining time on seek
+        const remaining = this.audio.duration - time;
+        this.timeTotal.textContent = `-${this.formatTime(remaining)}`;
+
         this.waveform.drawState(time); // Instant visual update
 
         // If it was playing, it stays playing (AudioElement behavior)
@@ -269,8 +281,11 @@ class AudioApp {
         if (this.audio.paused) return; // Stop loop if paused
 
         const pTime = this.audio.currentTime;
+        const duration = this.audio.duration || 0;
+        const remaining = Math.max(0, duration - pTime);
 
         this.timeCurrent.textContent = this.formatTime(pTime);
+        this.timeTotal.textContent = `-${this.formatTime(remaining)}`;
 
         // Sync Visualizer Time
         this.visualizer.setPlaybackTime(pTime);

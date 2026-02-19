@@ -32,6 +32,7 @@ export class WaveformDisplay {
 
     // Pre-calculate peaks for the entire file to avoid re-processing every frame
     loadAudio(audioBuffer) {
+        this.resize(); // Ensure canvas matches container before calc
         this.duration = audioBuffer.duration;
         const channelData = audioBuffer.getChannelData(0); // Use Ch1
         const sampleRate = audioBuffer.sampleRate;
