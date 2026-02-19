@@ -72,8 +72,12 @@ class AudioApp {
         this.btnStop.addEventListener('click', () => this.stop());
         // Reset Button (formerly Loop)
         this.btnLoop.addEventListener('click', () => {
-            this.stop(true);
+            // Do not stop playback. Just reset meters and visualizer.
             this.visualizer.reset();
+
+            if (this.workletNode) {
+                this.workletNode.port.postMessage({ type: 'reset' });
+            }
 
             // Reset UI Values manually to -oo
             this.updateUI({
@@ -159,6 +163,20 @@ class AudioApp {
         this.dropZone.querySelector('.drop-text').textContent = `Loading ${file.name}...`;
 
         try {
+            // Reset everything for new file
+            this.stop(true);
+            this.visualizer.reset();
+            if (this.workletNode) {
+                this.workletNode.port.postMessage({ type: 'reset' });
+            }
+            this.updateUI({
+                momentary: -100,
+                shortTerm: -100,
+                integrated: -100,
+                lra: 0,
+                truePeak: -100
+            });
+
             await this.initAudioContext();
 
             // 1. Create Blob URL for Streaming Playback (Mobile compatible)
