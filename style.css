@@ -449,14 +449,16 @@ h3 {
         grid-row: 1 / 2;
         margin-bottom: 0;
         display: flex;
-        gap: 10px;
+        gap: 20px;
+        /* More spacing between buttons */
         justify-content: flex-end;
     }
 
     .icon-btn {
-        font-size: 1.8rem;
-        /* Slightly adjusted to fit */
-        padding: 2px;
+        font-size: 2.4rem;
+        /* Significantly larger */
+        padding: 5px;
+        /* Larger touch target */
     }
 
     /* Row 2: Waveform spans full width */
