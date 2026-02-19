@@ -450,8 +450,8 @@ h3 {
         grid-row: 1 / 2;
         margin-bottom: 0;
         display: flex;
-        gap: 15px;
-        /* Nice balanced gap */
+        gap: 25px;
+        /* Increased gap */
         justify-content: center;
         /* Center aligned as requested */
         width: 100%;
