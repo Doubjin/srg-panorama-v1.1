@@ -6,6 +6,7 @@ class AudioApp {
         this.ctx = null;
         this.audioBuffer = null;
         this.audio = new Audio(); // HTML5 Audio Element
+        this.audio.crossOrigin = "anonymous"; // Essential for MediaElementSource
         this.audio.loop = false;
         this.mediaSource = null;
         this.workletNode = null;

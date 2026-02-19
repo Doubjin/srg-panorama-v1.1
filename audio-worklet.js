@@ -3,7 +3,7 @@
 class LufsProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
-        this.sampleRate = 48000;
+        this.sampleRate = globalThis.sampleRate || 48000;
 
         // Ring Buffer Setup
         // Max history needed: Short-term window (3s)
