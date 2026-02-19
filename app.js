@@ -192,26 +192,6 @@ class AudioApp {
             this.playerControls.classList.remove('disabled');
             this.timeTotal.textContent = `-${this.formatTime(this.audioBuffer.duration)}`;
 
-            // Update Media Session Metadata
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: file.name,
-                    artist: 'SRG PANORAMA V1.1',
-                    album: 'Audio Insight Data',
-                    artwork: [
-                        { src: 'https://via.placeholder.com/512?text=SRG', sizes: '512x512', type: 'image/png' }
-                    ]
-                });
-
-                // Add action handlers for lock screen controls
-                navigator.mediaSession.setActionHandler('play', () => this.play());
-                navigator.mediaSession.setActionHandler('pause', () => this.stop(false));
-                navigator.mediaSession.setActionHandler('stop', () => this.stop(true));
-                navigator.mediaSession.setActionHandler('seekto', (details) => {
-                    this.seek(details.seekTime);
-                });
-            }
-
             // Draw Waveform
             this.waveform.loadAudio(this.audioBuffer);
 
