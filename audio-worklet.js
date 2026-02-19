@@ -23,6 +23,20 @@ class LufsProcessor extends AudioWorkletProcessor {
         // Integrated State
         this.integratedSum = 0;
         this.integratedCount = 0;
+
+        this.port.onmessage = (event) => {
+            if (event.data.type === 'reset') {
+                this.reset();
+            }
+        };
+    }
+
+    reset() {
+        this.integratedSum = 0;
+        this.integratedCount = 0;
+        // Optional: clear buffer? 
+        // For ring buffer, we don't strictly need to clear it, 
+        // but resetting state is enough for "future" measurements.
     }
 
     process(inputs, outputs, parameters) {
