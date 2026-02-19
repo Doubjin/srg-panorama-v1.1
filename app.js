@@ -7,7 +7,7 @@ class AudioApp {
         this.audioBuffer = null;
         this.sourceNode = null;
         this.workletNode = null;
-        this.gainNode = null;
+        this.workletNode = null;
 
         // Playback State
         this.isPlaying = false;
@@ -30,7 +30,7 @@ class AudioApp {
 
         this.waveformCanvas = document.getElementById('waveform-canvas');
 
-        this.monitorVol = document.getElementById('monitor-vol');
+
         this.led = document.getElementById('signal-led');
 
         // Meter Elements
@@ -101,12 +101,7 @@ class AudioApp {
             window.addEventListener('mouseup', onUp);
         });
 
-        // Monitoring
-        this.monitorVol.addEventListener('input', (e) => {
-            if (this.gainNode) {
-                this.gainNode.gain.value = parseFloat(e.target.value);
-            }
-        });
+
 
         // Keyboard shortcuts
         window.addEventListener('keydown', (e) => {
@@ -129,10 +124,6 @@ class AudioApp {
                 this.updateUI(event.data);
                 this.visualizer.update(event.data);
             };
-
-            // Gain Node for Monitor
-            this.gainNode = this.ctx.createGain();
-            this.gainNode.connect(this.ctx.destination);
         }
         if (this.ctx.state === 'suspended') {
             await this.ctx.resume();
@@ -169,8 +160,8 @@ class AudioApp {
             // Draw Waveform
             this.waveform.loadAudio(this.audioBuffer);
 
-            // Reset state
-            this.stop();
+            // Start playback immediately
+            this.play();
         } catch (err) {
             console.error(err);
             alert('Error decoding audio file.');
@@ -187,7 +178,7 @@ class AudioApp {
         this.sourceNode.buffer = this.audioBuffer;
         this.sourceNode.loop = this.isLooping;
 
-        this.sourceNode.connect(this.gainNode);
+        this.sourceNode.connect(this.ctx.destination);
         this.sourceNode.connect(this.workletNode);
 
         this.sourceNode.start(0, offset);
@@ -226,7 +217,11 @@ class AudioApp {
         }
     }
 
-    togglePlay() {
+    async togglePlay() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+            await this.ctx.resume();
+        }
+
         if (this.isPlaying) {
             this.stop(false);
             this.pauseTime = this.ctx.currentTime - this.startTime;

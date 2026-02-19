@@ -273,7 +273,194 @@ h3 {
     font-weight: 700;
 }
 
-.monitor-control label {
-    color: #000;
-    font-weight: 700;
+
+
+/* Mobile Responsiveness - Compact Single Page */
+@media (max-width: 768px) {
+    body {
+        height: 100vh;
+        /* Fallback */
+        height: 100dvh;
+        overflow: hidden;
+        /* Prevent body scroll */
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .app-container {
+        width: 100%;
+        height: 100%;
+        max-height: 100dvh;
+        padding: 15px;
+        border-radius: 0;
+        border: none;
+        overflow: hidden;
+        /* Prevent internal scroll spill */
+        gap: 10px;
+        /* Reduce gap */
+    }
+
+    /* Compact Header */
+    .header {
+        margin-bottom: 5px;
+        flex-direction: row;
+        /* Keep row if possible, or compact col */
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        /* Ensure header doesn't squash */
+    }
+
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .logo .model {
+        font-size: 0.7rem;
+        display: inline-block;
+    }
+
+    /* Main Layout - Flex Column */
+    .meter-display {
+        flex: 1;
+        /* Fill remaining space */
+        flex-direction: column;
+        overflow: hidden;
+        gap: 5px;
+        min-height: 0;
+    }
+
+    .visualizer-container {
+        position: relative;
+        flex: 1;
+        /* Flexible height */
+        width: 100%;
+        height: auto;
+        /* Override fixed height */
+        min-height: 50px;
+        /* Allow shrinking significantly to fit controls */
+        margin-bottom: 0;
+    }
+
+    /* Stats Panel - 2 Column Grid */
+    .stats-panel {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px 15px;
+        padding-top: 5px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        flex: 0 0 auto;
+        margin-left: 0;
+    }
+
+    .stat-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: baseline;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 2px;
+        margin-bottom: 0;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+        margin-bottom: 0;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+    }
+
+    /* Target Selector - Compact Row */
+    .target-selector {
+        grid-column: 1 / -1;
+        border-top: none;
+        padding-top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .target-selector h3 {
+        display: none;
+    }
+
+    .radio-group label {
+        font-size: 0.8rem;
+    }
+
+    /* Controls - Compact Footer */
+    .controls-panel {
+        flex: 0 0 auto;
+        margin-top: 0;
+        gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Compact Drop Zone */
+    .drop-zone {
+        width: 100%;
+        height: 35px;
+        /* Very thin bar */
+        border-radius: 8px;
+        border: 1px dashed #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .drop-text {
+        padding: 5px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Player Controls */
+    .player-controls {
+        width: 100%;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .transport-buttons {
+        margin-bottom: 0;
+        display: flex;
+        gap: 15px;
+        /* More space between buttons */
+    }
+
+    .icon-btn {
+        font-size: 2rem;
+        /* Much larger buttons */
+        padding: 5px;
+        /* Larger touch target */
+    }
+
+    .timeline-container {
+        flex: 1;
+        margin-left: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .waveform-wrapper {
+        flex: 1;
+        height: 30px;
+        /* Tiny waveform */
+        border-bottom: 1px solid #000;
+    }
+
+    .time-display {
+        font-size: 0.7rem;
+    }
 }

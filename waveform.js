@@ -13,6 +13,7 @@ export class WaveformDisplay {
 
         this.peaks = null;
         this.duration = 0;
+        this.lastTime = 0;
 
         window.addEventListener('resize', () => this.resize());
     }
@@ -26,7 +27,7 @@ export class WaveformDisplay {
         this.canvas.height = this.height * dpr;
         this.ctx.scale(dpr, dpr);
 
-        if (this.peaks) this.drawStaticWaveform();
+        if (this.peaks) this.drawState(this.lastTime);
     }
 
     // Pre-calculate peaks for the entire file to avoid re-processing every frame
@@ -63,6 +64,7 @@ export class WaveformDisplay {
     }
 
     drawState(currentTime) {
+        this.lastTime = currentTime;
         this.ctx.clearRect(0, 0, this.width, this.height);
 
         if (!this.peaks) return;
